@@ -8,7 +8,7 @@
 // ---------------------------------------------------------
 // If deployed on Render, you can enter your backend URL here:
 // Example: const RENDER_BACKEND_URL = 'https://your-backend-name.onrender.com';
-const RENDER_BACKEND_URL = '';
+const RENDER_BACKEND_URL = 'https://machine-translation-system.onrender.com';
 
 // Check if running in a local development environment
 const isLocalhost = Boolean(
@@ -352,7 +352,7 @@ function hideAlert() {
 function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast ${type === 'success' ? 'toast-success' : ''}`;
-  
+
   const icon = type === 'success' ? '✓' : 'ℹ️';
   toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
 
