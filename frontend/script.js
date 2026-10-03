@@ -3,8 +3,35 @@
  * Connects directly to the FastAPI Neural Machine Translation backend.
  */
 
-// Configuration
-const API_BASE_URL = 'http://127.0.0.1:8000';
+// ---------------------------------------------------------
+// API Configuration (Configurable for Local & Render Deployment)
+// ---------------------------------------------------------
+// If deployed on Render, you can enter your backend URL here:
+// Example: const RENDER_BACKEND_URL = 'https://your-backend-name.onrender.com';
+const RENDER_BACKEND_URL = '';
+
+// Check if running in a local development environment
+const isLocalhost = Boolean(
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname === '' ||
+  window.location.protocol === 'file:'
+);
+
+// Dynamic resolution priority:
+// 1. Query parameter ?api=https://your-backend.onrender.com
+// 2. LocalStorage override ('API_BASE_URL')
+// 3. window.APP_CONFIG.API_BASE_URL (if injected)
+// 4. Localhost default (http://127.0.0.1:8000) during local development
+// 5. RENDER_BACKEND_URL if set above
+const urlParams = new URLSearchParams(window.location.search);
+const queryApi = urlParams.get('api');
+const storageApi = localStorage.getItem('API_BASE_URL');
+const windowApi = window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL;
+
+const rawBaseUrl = queryApi || storageApi || windowApi || (isLocalhost ? 'http://127.0.0.1:8000' : (RENDER_BACKEND_URL || ''));
+const API_BASE_URL = rawBaseUrl.replace(/\/+$/, '');
+
 const TRANSLATE_ENDPOINT = `${API_BASE_URL}/translate`;
 const HEALTH_ENDPOINT = `${API_BASE_URL}/health`;
 const MODEL_INFO_ENDPOINT = `${API_BASE_URL}/model-info`;
@@ -202,7 +229,8 @@ async function handleTranslate() {
     let friendlyMessage = 'Unable to translate text.';
 
     if (err.name === 'AbortError' || err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
-      friendlyMessage = 'Cannot connect to the FastAPI translation server at http://127.0.0.1:8000. Please ensure the backend is started.';
+      const targetUrl = API_BASE_URL || 'the backend service';
+      friendlyMessage = `Cannot connect to the translation server at ${targetUrl}. Please ensure the backend is started.`;
       setBackendStatus(false, 'API Offline');
     } else {
       friendlyMessage = `Translation notice: ${err.message}`;

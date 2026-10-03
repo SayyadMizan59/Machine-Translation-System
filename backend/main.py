@@ -20,10 +20,31 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 # ---------------------------------------------------------
 # Configuration and Path Resolution
 # ---------------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent
-MODEL_DIR = BASE_DIR / "final_english_hindi_model"
-if not MODEL_DIR.exists():
-    MODEL_DIR = Path("./final_english_hindi_model").resolve()
+CURRENT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = CURRENT_DIR.parent
+
+# Check candidate directories in order of priority:
+# 1. Environment variable MODEL_PATH (if set)
+# 2. Inside backend directory: backend/final_english_hindi_model
+# 3. In project root: final_english_hindi_model
+# 4. Relative to current working directory
+candidates = [
+    Path(os.environ["MODEL_PATH"]).resolve() if "MODEL_PATH" in os.environ else None,
+    CURRENT_DIR / "final_english_hindi_model",
+    PROJECT_ROOT / "final_english_hindi_model",
+    Path("./backend/final_english_hindi_model").resolve(),
+    Path("./final_english_hindi_model").resolve(),
+]
+
+MODEL_DIR = None
+for candidate in candidates:
+    if candidate and candidate.exists() and (candidate / "config.json").exists():
+        MODEL_DIR = candidate
+        break
+
+if MODEL_DIR is None:
+    # Default fallback
+    MODEL_DIR = (CURRENT_DIR / "final_english_hindi_model") if (CURRENT_DIR / "final_english_hindi_model").exists() else (PROJECT_ROOT / "final_english_hindi_model")
 
 # Global model state
 tokenizer: Optional[AutoTokenizer] = None
@@ -50,7 +71,7 @@ async def lifespan(app: FastAPI):
     """
     global tokenizer, model, device
     print(f"[*] Initializing model on device: {device}...")
-    print(f"[*] Loading model from: {MODEL_DIR}...")
+    print(f"[*] Resolved model directory: {MODEL_DIR}...")
 
     if not MODEL_DIR.exists():
         raise RuntimeError(f"Model directory not found at: {MODEL_DIR}")
@@ -84,11 +105,33 @@ app = FastAPI(
 # ---------------------------------------------------------
 # CORS Configuration
 # ---------------------------------------------------------
+# Default local origins for development
+default_origins = [
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
+# Allow custom frontend URL(s) from environment variables (comma-separated if multiple)
+env_origins = os.getenv("ALLOWED_ORIGINS", os.getenv("FRONTEND_URL", ""))
+if env_origins:
+    custom_origins = [orig.strip() for orig in env_origins.split(",") if orig.strip()]
+    allowed_origins = list(set(default_origins + custom_origins))
+else:
+    allowed_origins = default_origins
+
+if os.getenv("ALLOW_ALL_ORIGINS", "false").lower() in ("true", "1"):
+    allowed_origins = ["*"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"^https:\/\/.*\.onrender\.com$",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -189,4 +232,6 @@ async def get_model_info():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=False)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    uvicorn.run("main:app", host=host, port=port, reload=False)

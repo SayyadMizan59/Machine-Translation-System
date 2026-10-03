@@ -1,0 +1,24 @@
+services:
+  # ---------------------------------------------------------------------------
+  # 1. FastAPI Translation Backend Web Service
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: translation-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ALLOW_ALL_ORIGINS
+        value: "false"
+
+  # ---------------------------------------------------------------------------
+  # 2. Translation Frontend Static Site
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: translation-frontend
+    runtime: static
+    rootDir: frontend
+    staticPublishPath: .
