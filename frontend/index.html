@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English to Hindi Translator | Neural Machine Translation</title>
+  <meta name="description" content="A neural machine translation system built using a fine-tuned Transformer model.">
+  
+  <!-- Google Fonts: Inter & Outfit & Noto Sans Devanagari -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Ambient background glow elements -->
+  <div class="glow-orb orb-1"></div>
+  <div class="glow-orb orb-2"></div>
+
+  <!-- Navigation / Header -->
+  <header class="site-header">
+    <div class="header-container">
+      <a href="#home" class="brand">
+        <span class="brand-icon" aria-hidden="true">🌐</span>
+        <div class="brand-text">
+          <span class="brand-title">English to Hindi Translator</span>
+          <span class="brand-subtitle">Neural Machine Translation</span>
+        </div>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#home" class="nav-link active">Home</a>
+        <a href="#how-it-works" class="nav-link">How It Works</a>
+        <a href="#about-model" class="nav-link">About Model</a>
+        <a href="#features" class="nav-link">Features</a>
+      </nav>
+
+      <div class="header-status">
+        <span id="backendStatusIndicator" class="status-badge checking">
+          <span class="status-dot"></span>
+          <span id="backendStatusText">Checking API...</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- Hero Section -->
+    <section id="home" class="hero-section">
+      <div class="badge-wrapper">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          <span>Transformer Based • English → Hindi</span>
+        </div>
+      </div>
+      <h1 class="hero-title">English to Hindi Translator</h1>
+      <p class="hero-desc">
+        A neural machine translation system built using a fine-tuned Transformer model.
+      </p>
+    </section>
+
+    <!-- Main Translation Studio Section -->
+    <section class="translation-section" aria-label="Translation Studio">
+      <div class="translation-card">
+        <!-- Panels Grid -->
+        <div class="translation-grid">
+          
+          <!-- Left Panel: English Source -->
+          <div class="panel source-panel">
+            <div class="panel-header">
+              <div class="panel-lang">
+                <span class="lang-flag">🇺🇸</span>
+                <span class="lang-name">English</span>
+                <span class="lang-tag">Source</span>
+              </div>
+              <button id="btnClearInput" class="icon-btn" title="Clear input text" aria-label="Clear input text">
+                ✕
+              </button>
+            </div>
+
+            <div class="textarea-wrapper">
+              <textarea 
+                id="englishInput" 
+                class="translation-input" 
+                placeholder="Enter your English sentence..." 
+                maxlength="500"
+                rows="6"
+                spellcheck="true"
+              ></textarea>
+            </div>
+
+            <div class="panel-footer">
+              <div class="char-counter">
+                <span id="charCount">0</span> / 500 characters
+              </div>
+              <button id="btnPasteText" class="subtle-link-btn" title="Paste from clipboard">
+                📋 Paste
+              </button>
+            </div>
+          </div>
+
+          <!-- Divider / Arrow Indicator -->
+          <div class="panel-divider" aria-hidden="true">
+            <div class="arrow-circle">
+              <span class="arrow-symbol">→</span>
+            </div>
+          </div>
+
+          <!-- Right Panel: Hindi Target -->
+          <div class="panel target-panel">
+            <div class="panel-header">
+              <div class="panel-lang">
+                <span class="lang-flag">🇮🇳</span>
+                <span class="lang-name">Hindi</span>
+                <span class="lang-tag target-tag">Neural Target</span>
+              </div>
+              <div class="panel-actions-top">
+                <button id="btnCopyTop" class="icon-btn" title="Copy translation" aria-label="Copy translation">
+                  📋
+                </button>
+              </div>
+            </div>
+
+            <div class="output-wrapper">
+              <div id="translationOutput" class="translation-output placeholder-state" tabindex="0">
+                Your Hindi translation will appear here...
+              </div>
+              
+              <!-- Loading Overlay State -->
+              <div id="loadingOverlay" class="loading-overlay hidden">
+                <div class="spinner"></div>
+                <span class="loading-text">Translating with Transformer model...</span>
+              </div>
+            </div>
+
+            <div class="panel-footer">
+              <div class="output-meta">
+                <span id="outputWordCount">0 words</span>
+                <span id="latencyBadge" class="latency-badge hidden">⚡ 0ms</span>
+              </div>
+              <button id="btnCopyTranslation" class="copy-btn" disabled>
+                <span class="copy-icon">📋</span>
+                <span id="copyBtnText">Copy Translation</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div id="statusAlert" class="status-alert hidden" role="alert">
+          <span class="alert-icon">⚠️</span>
+          <span id="alertMessage" class="alert-message">Notice message</span>
+          <button id="btnCloseAlert" class="alert-close-btn" aria-label="Close alert">✕</button>
+        </div>
+
+        <!-- Action Controls Bar -->
+        <div class="action-controls-bar">
+          <div class="secondary-actions">
+            <button id="btnClear" class="btn btn-secondary">
+              <span>✕</span> Clear
+            </button>
+          </div>
+
+          <div class="primary-actions">
+            <button id="btnTranslate" class="btn btn-primary">
+              <span id="translateBtnIcon" class="btn-icon">⚡</span>
+              <span id="translateBtnText">Translate</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Example Sentences Section -->
+    <section class="examples-section">
+      <div class="section-header-compact">
+        <h2 class="section-title-sm">Try an example</h2>
+        <p class="section-sub-sm">Click any sample sentence below to load it into the English input</p>
+      </div>
+      <div class="example-chips">
+        <button class="example-chip" data-text="How are you?">
+          <span class="chip-quote">“</span>How are you?<span class="chip-quote">”</span>
+        </button>
+        <button class="example-chip" data-text="I am a student.">
+          <span class="chip-quote">“</span>I am a student.<span class="chip-quote">”</span>
+        </button>
+        <button class="example-chip" data-text="I am going to college.">
+          <span class="chip-quote">“</span>I am going to college.<span class="chip-quote">”</span>
+        </button>
+        <button class="example-chip" data-text="Where are you going?">
+          <span class="chip-quote">“</span>Where are you going?<span class="chip-quote">”</span>
+        </button>
+        <button class="example-chip" data-text="India is a beautiful country.">
+          <span class="chip-quote">“</span>India is a beautiful country.<span class="chip-quote">”</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+      <div class="section-header">
+        <span class="section-eyebrow">Key Capabilities</span>
+        <h2 class="section-title">Designed for Accuracy and Privacy</h2>
+        <p class="section-subtitle">A dedicated deep learning pipeline engineered specifically for English to Hindi translation.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon-box">⚡</div>
+          <h3 class="feature-title">Fast Translation</h3>
+          <p class="feature-desc">Translate English sentences rapidly using the locally loaded MarianMT deep neural network.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🤖</div>
+          <h3 class="feature-title">Transformer Model</h3>
+          <p class="feature-desc">Uses a fine-tuned sequence-to-sequence Transformer with multi-head self-attention layers.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">📊</div>
+          <h3 class="feature-title">Evaluated Model</h3>
+          <p class="feature-desc">Rigorously evaluated using BLEU score and cross-entropy validation loss on paired corpora.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon-box">🔒</div>
+          <h3 class="feature-title">Local Model</h3>
+          <p class="feature-desc">Translation is performed using the locally stored trained model rather than an external translation API.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="pipeline-section">
+      <div class="section-header">
+        <span class="section-eyebrow">Architecture Pipeline</span>
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">From raw English input characters to natural Hindi sentence generation.</p>
+      </div>
+
+      <div class="pipeline-flow">
+        
+        <div class="step-card">
+          <div class="step-badge">Step 1</div>
+          <div class="step-icon">📝</div>
+          <h3 class="step-title">English Input</h3>
+          <p class="step-desc">The user supplies natural English sentences to be translated.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">↓</div>
+
+        <div class="step-card">
+          <div class="step-badge">Step 2</div>
+          <div class="step-icon">⚙️</div>
+          <h3 class="step-title">Text Preprocessing</h3>
+          <p class="step-desc">Input string sanitization, whitespace trimming, and normalization.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">↓</div>
+
+        <div class="step-card">
+          <div class="step-badge">Step 3</div>
+          <div class="step-icon">🔠</div>
+          <h3 class="step-title">Tokenization</h3>
+          <p class="step-desc">SentencePiece tokenizes text into subword token IDs using <code>source.spm</code>.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">↓</div>
+
+        <div class="step-card">
+          <div class="step-badge">Step 4</div>
+          <div class="step-icon">🧠</div>
+          <h3 class="step-title">Transformer Model</h3>
+          <p class="step-desc">MarianMT 6-layer encoder and 6-layer decoder encode context and compute cross-attention.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">↓</div>
+
+        <div class="step-card">
+          <div class="step-badge">Step 5</div>
+          <div class="step-icon">🎯</div>
+          <h3 class="step-title">Sequence Generation</h3>
+          <p class="step-desc">Autoregressive beam search (beams=4) finds high-probability token sequences.</p>
+        </div>
+
+        <div class="step-arrow" aria-hidden="true">↓</div>
+
+        <div class="step-card">
+          <div class="step-badge">Step 6</div>
+          <div class="step-icon">✨</div>
+          <h3 class="step-title">Hindi Translation</h3>
+          <p class="step-desc">Detokenizer maps target token IDs back into Devanagari Hindi text.</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- About Model Section -->
+    <section id="about-model" class="model-info-section">
+      <div class="section-header">
+        <span class="section-eyebrow">Training & Performance</span>
+        <h2 class="section-title">About the Model</h2>
+        <p class="section-subtitle">Evaluation metrics and training specifications for the neural translation checkpoint.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-label">Model Architecture</span>
+          <span class="stat-value">Transformer / Seq2Seq</span>
+          <span class="stat-sub">MarianMT MarianForConditionalGeneration</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Translation Direction</span>
+          <span class="stat-value highlight-accent">English → Hindi</span>
+          <span class="stat-sub">Source: eng • Target: hin</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Training Samples</span>
+          <span class="stat-value">20,000</span>
+          <span class="stat-sub">Paired parallel sentences</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Epochs</span>
+          <span class="stat-value">2</span>
+          <span class="stat-sub">Full passes over dataset</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">BLEU Score</span>
+          <span class="stat-value highlight-green">12.05</span>
+          <span class="stat-sub">Standard bilingual evaluation metric</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Training Loss</span>
+          <span class="stat-value">2.108107</span>
+          <span class="stat-sub">Final cross-entropy loss</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Validation Loss</span>
+          <span class="stat-value">3.856888</span>
+          <span class="stat-sub">Holdout validation loss</span>
+        </div>
+
+        <div class="stat-card">
+          <span class="stat-label">Training GPU</span>
+          <span class="stat-value">Tesla T4</span>
+          <span class="stat-sub">16GB VRAM acceleration</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <div class="footer-logo">🌐 English to Hindi Translator</div>
+        <p class="footer-tagline">English to Hindi Machine Translation System</p>
+      </div>
+      <div class="footer-meta">
+        <span class="badge-mini">Data Science Mini Project</span>
+        <span class="footer-copy">Powered by PyTorch, Hugging Face MarianMT & FastAPI</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
